@@ -3,10 +3,10 @@ const path = require('path');
 const socket = require('socket.io');
 
 const app = express();
-app.use(express.static(path.join(__dirname, '/client')));
-
 const users = [];
 const messages = [];
+
+app.use(express.static(path.join(__dirname, '/client')));
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/client/index.html'));
@@ -24,15 +24,15 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('message', message);
 });
 
-  socket.on('join', (join) => {
-    users.push(join);
-    socket.broadcast.emit('message', { author: 'Chat Bot', content: `<i>${join.name} has joined the conversation!</i>` });
+  socket.on('join', (user) => {
+    users.push(user);
+    socket.broadcast.emit('message', { author: 'Chat Bot', content: `<i>${user.name} has joined the conversation!</i>` });
   });
 
   socket.on('disconnect', () => {
-    const findUserIndex = users.findIndex(user => user.id === socket.id);
-    const findUserName = users[findUserIndex] === 'undefined' ? '' : users[findUserIndex].name;
-    users.splice(findUserIndex, 1);
-    socket.broadcast.emit('message', { author: 'Chat Bot', content: `<i>${findUserName} has left the conversation... :(</i>` });
+    const foundUserIndex = users.findIndex(user => user.id === socket.id);
+    const foundUserName = users[foundUserIndex] === 'undefined' ? '' : users[foundUserIndex].name;
+    users.splice(foundUserIndex, 1);
+    socket.broadcast.emit('message', { author: 'Chat Bot', content: `<i>${foundUserName} has left the conversation... :(</i>` });
   });
 });
