@@ -7,7 +7,11 @@ const userNameInput = document.querySelector('#username');
 const messageContentInput = document.querySelector('#message-content');
 
 // GLOBAL
+const socket = io();
 let userName;
+
+// SOCKET
+socket.on('message', ({ author, content }) => addMessage(author, content));
 
 // CODE
 
@@ -17,20 +21,27 @@ const login = function (event) {
         alert(`Enter user name!`);
     } else {
         userName = userNameInput.value;
+        socket.emit('join', { name: userName, id: socket.id});
         loginForm.classList.remove('show');
         messagesSection.classList.add('show');
     }
 };
 
-const sendMessage = function (event) {
-    event.preventDefault();
-    if (messageContentInput.value === '') {
-        alert(`Enter message!`);
-    } else {
-        addMessage(userName, messageContentInput.value);
-        messageContentInput.value = '';
+function sendMessage(e) {
+    e.preventDefault();
+  
+    let messageContent = messageContentInput.value;
+  
+    if(!messageContent.length) {
+      alert('You have to type something!');
     }
-};
+    else {
+      addMessage(userName, messageContent);
+      socket.emit('message', { author: userName, content: messageContent })
+      messageContentInput.value = '';
+    }
+  
+  }
 
 const addMessage = function (author, content) {
     const message = document.createElement('li');
